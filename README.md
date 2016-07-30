@@ -1,30 +1,33 @@
 # Treasure Data Input Plugin for Embulk
 
-TODO: Write short description here and build.gradle file.
-
 ## Overview
 
 * **Plugin type**: input
-* **Resume supported**: yes
+* **Resume supported**: no
 * **Cleanup supported**: yes
 * **Guess supported**: no
 
 ## Configuration
 
-- **option1**: description (integer, required)
-- **option2**: description (string, default: `"myvalue"`)
-- **option3**: description (string, default: `null`)
+- **apikey**: apikey (string, required)
+- **endpoint**: hostname (string, default='api.treasuredata.com')
+- **http_proxy**: http proxy configuration (tuple of host, port, useSsl, user, and password. default is null)
+- **use_ssl**: the flag (boolean, default=true)
+- **database**: database name (string, optional)
+- **query**: presto query string (string, optional)
+- **job_id**: job_id (string, optional)
 
 ## Example
 
 ```yaml
 in:
   type: td
-  option1: example1
-  option2: example2
+  apikey: my_apikey
+  endpoint: api.treasuredata.com
+  database: my_db
+  query: |
+    SELECT * FROM my_table
 ```
-
-
 ## Build
 
 ```
