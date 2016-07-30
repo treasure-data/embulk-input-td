@@ -53,6 +53,7 @@ import static com.treasuredata.client.model.TDResultFormat.MESSAGE_PACK_GZ;
 import static java.lang.Integer.parseInt;
 import static java.util.Locale.ENGLISH;
 import static org.embulk.spi.Exec.getLogger;
+import static org.embulk.spi.Exec.newConfigDiff;
 import static org.embulk.spi.Exec.newTaskReport;
 import static org.embulk.spi.type.Types.BOOLEAN;
 import static org.embulk.spi.type.Types.DOUBLE;
@@ -239,7 +240,7 @@ public class TdInputPlugin
                 break;
             }
 
-            log.debug(String.format(ENGLISH, "Run job status check in %.2f sec.", waitTime / 1000.0));
+            log.debug("Wait for job finished");
             try {
                 Thread.sleep(waitTime);
             }
@@ -249,7 +250,7 @@ public class TdInputPlugin
 
         // confirm if the job status is 'success'
         if (js.getStatus() != TDJob.Status.SUCCESS) {
-            throw new ConfigException(String.format(ENGLISH, "Cannot download job result caused by the job status '%s'", js.getStatus()));
+            throw new ConfigException(String.format(ENGLISH, "Cannot download job result because the job was '%s'.", js.getStatus()));
         }
     }
 
@@ -259,7 +260,7 @@ public class TdInputPlugin
             return new ObjectMapper().readTree(schema);
         }
         catch (IOException e) {
-            throw new ConfigException(String.format("Failed to parse job result schema as JSON: %s", schema));
+            throw new ConfigException(String.format(ENGLISH, "Failed to parse job result schema as JSON: %s", schema));
         }
     }
 
@@ -283,7 +284,7 @@ public class TdInputPlugin
             return convertPrestoColumnType(from);
         case HIVE:
         default:
-            throw new ConfigException(String.format(ENGLISH, "Unsupported job type '%s'. Supported types are [presto].", jobType)); // TODO
+            throw new ConfigException(String.format(ENGLISH, "Unsupported job type '%s'. Supported types are [presto].", jobType)); // TODO hive
         }
     }
 
@@ -303,7 +304,7 @@ public class TdInputPlugin
             return STRING;
         }
         else {
-            throw new ConfigException(String.format(ENGLISH, "Unsupported presto type '%s'", from)); // TODO
+            throw new ConfigException(String.format(ENGLISH, "Unsupported presto type '%s'", from)); // TODO other types
         }
     }
 
@@ -313,7 +314,7 @@ public class TdInputPlugin
             InputPlugin.Control control)
     {
         control.run(taskSource, schema, taskCount);
-        return Exec.newConfigDiff();
+        return newConfigDiff();
     }
 
     @Override
@@ -409,7 +410,7 @@ public class TdInputPlugin
             return new DoubleValueWriter(column);
         }
         else if (type.equals(JSON)) {
-            throw new ConfigException(String.format(ENGLISH, "Unsupported column type (%s:%s)", column.getName(), type));
+            throw new ConfigException(String.format(ENGLISH, "Unsupported column type (%s:%s)", column.getName(), type)); // TODO
         }
         else if (type.equals(LONG)) {
             return new LongValueWriter(column);
@@ -418,17 +419,17 @@ public class TdInputPlugin
             return new StringValueWriter(column);
         }
         else if (type.equals(TIMESTAMP)) {
-            throw new ConfigException(String.format(ENGLISH, "Unsupported column type (%s:%s)", column.getName(), type));
+            throw new ConfigException(String.format(ENGLISH, "Unsupported column type (%s:%s)", column.getName(), type)); // TODO
         }
         else {
-            throw new ConfigException(String.format(ENGLISH, "Unsupported column type (%s:%s)", column.getName(), type));
+            throw new ConfigException(String.format(ENGLISH, "Unsupported column type (%s:%s)", column.getName(), type)); // TODO
         }
     }
 
     @Override
     public ConfigDiff guess(ConfigSource config)
     {
-        return Exec.newConfigDiff(); // do nothing
+        return newConfigDiff(); // do nothing
     }
 
     static class InvalidRecordException
