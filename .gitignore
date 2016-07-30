@@ -1,7 +1,6 @@
 *~
 /pkg/
 /tmp/
-*.gemspec
 .gradle/
 /classpath/
 build/
