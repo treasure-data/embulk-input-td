@@ -7,13 +7,13 @@ import org.msgpack.value.Value;
 public class BooleanValueWriter
         extends AbstractValueWriter
 {
-    public BooleanValueWriter(Column column)
+    public BooleanValueWriter(final Column column)
     {
         super(column);
     }
 
     @Override
-    public void writeNotNull(Value v, PageBuilder to)
+    public void writeNotNull(final Value v, final PageBuilder to)
     {
         to.setBoolean(index, v.asBooleanValue().getBoolean());
     }

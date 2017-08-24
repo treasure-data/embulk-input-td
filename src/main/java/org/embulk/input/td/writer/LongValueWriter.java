@@ -7,13 +7,13 @@ import org.msgpack.value.Value;
 public class LongValueWriter
         extends AbstractValueWriter
 {
-    public LongValueWriter(Column column)
+    public LongValueWriter(final Column column)
     {
         super(column);
     }
 
     @Override
-    public void writeNotNull(Value v, PageBuilder to)
+    public void writeNotNull(final Value v, final PageBuilder to)
     {
         to.setLong(index, v.asIntegerValue().toLong());
     }
