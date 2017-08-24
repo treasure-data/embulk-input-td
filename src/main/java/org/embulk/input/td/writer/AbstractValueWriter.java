@@ -17,7 +17,7 @@ public abstract class AbstractValueWriter
     }
 
     @Override
-    public void write(Value v, PageBuilder to)
+    public void write(final Value v, final PageBuilder to)
     {
         if (v.isNilValue()) {
             to.setNull(index);

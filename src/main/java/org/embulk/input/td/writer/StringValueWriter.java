@@ -7,13 +7,13 @@ import org.msgpack.value.Value;
 public class StringValueWriter
         extends AbstractValueWriter
 {
-    public StringValueWriter(Column column)
+    public StringValueWriter(final Column column)
     {
         super(column);
     }
 
     @Override
-    public void writeNotNull(Value v, PageBuilder to)
+    public void writeNotNull(final Value v, final PageBuilder to)
     {
         to.setString(index, v.asStringValue().asString());
     }

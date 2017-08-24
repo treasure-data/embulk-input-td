@@ -7,13 +7,13 @@ import org.msgpack.value.Value;
 public class JsonValueWriter
         extends AbstractValueWriter
 {
-    public JsonValueWriter(Column column)
+    public JsonValueWriter(final Column column)
     {
         super(column);
     }
 
     @Override
-    public void writeNotNull(Value v, PageBuilder to)
+    public void writeNotNull(final Value v, final PageBuilder to)
     {
         to.setJson(index, v);
     }
