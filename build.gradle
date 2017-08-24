@@ -23,7 +23,7 @@ dependencies {
     provided "org.embulk:embulk-core:0.8.29"
     compile  "org.embulk:embulk-standards:0.8.29"
     provided "org.embulk:embulk-standards:0.8.29"
-    compile  "com.treasuredata.client:td-client:0.7.24"
+    compile  "com.treasuredata.client:td-client:0.7.41"
 
     testCompile "junit:junit:4.+"
 }
