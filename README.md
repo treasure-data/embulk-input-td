@@ -1,5 +1,7 @@
 # Treasure Data Input Plugin for Embulk
 
+**NOTICE**: embulk-input-td v0.2.0+ only supports **Embulk v0.8.22+**.
+
 ## Overview
 
 * **Plugin type**: input
