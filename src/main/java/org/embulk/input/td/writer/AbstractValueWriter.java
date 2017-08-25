@@ -5,24 +5,21 @@ import org.embulk.spi.PageBuilder;
 import org.msgpack.value.Value;
 
 public abstract class AbstractValueWriter
-        implements ValueWriter
-{
+        implements ValueWriter {
+
     protected final Column column;
     protected final int index;
 
-    protected AbstractValueWriter(Column column)
-    {
+    protected AbstractValueWriter(Column column) {
         this.column = column;
         this.index = column.getIndex();
     }
 
     @Override
-    public void write(final Value v, final PageBuilder to)
-    {
+    public void write(final Value v, final PageBuilder to) {
         if (v.isNilValue()) {
             to.setNull(index);
-        }
-        else {
+        } else {
             writeNotNull(v, to);
         }
     }
