@@ -3,6 +3,7 @@ plugins {
     id "com.github.jruby-gradle.base" version "0.1.5"
     id "java"
     id "checkstyle"
+    id "findbugs"
     id "jacoco"
 }
 import com.github.jrubygradle.JRubyExec
@@ -51,6 +52,16 @@ checkstyleTest {
 task checkstyle(type: Checkstyle) {
     classpath = sourceSets.main.output + sourceSets.test.output
     source = sourceSets.main.allJava + sourceSets.test.allJava
+}
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
+findbugs {
+    ignoreFailures = true
 }
 
 jacocoTestReport {
