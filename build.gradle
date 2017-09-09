@@ -5,6 +5,7 @@ plugins {
     id "checkstyle"
     id "findbugs"
     id "jacoco"
+    id "pmd"
 }
 import com.github.jrubygradle.JRubyExec
 repositories {
@@ -58,6 +59,11 @@ tasks.withType(FindBugs) {
 }
 findbugs {
     ignoreFailures = true
+}
+
+// PMD
+pmd {
+    ignoreFailures = false
 }
 
 jacocoTestReport {
