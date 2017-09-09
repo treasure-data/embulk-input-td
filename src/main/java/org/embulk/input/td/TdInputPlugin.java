@@ -285,7 +285,7 @@ public class TdInputPlugin
                                 if (!v.isArrayValue()) {
                                     throw new InvalidRecordException(
                                             String.format(Locale.ENGLISH,
-                                                    "Must be array value: ", v.toString()));
+                                                    "Must be array value: (%s)", v.toString()));
                                 }
 
                                 final ArrayValue record = v.asArrayValue();
