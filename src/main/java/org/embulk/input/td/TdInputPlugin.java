@@ -244,6 +244,22 @@ public class TdInputPlugin
                         "Cannot parse type: expected ')' for array type: " + p.getOriginalString());
             }
             return Types.JSON;
+        } else if (p.scan("MAP")) {
+            if (!p.scan("(")) {
+                throw new IllegalArgumentException(
+                        "Cannot parse type: expected '(' for map type: " + p.getOriginalString());
+            }
+            convertPrestoColumnType(p);
+            if (!p.scan(",")) {
+                throw new IllegalArgumentException(
+                        "Cannot parse type: expected ',' for map type: " + p.getOriginalString());
+            }
+            convertPrestoColumnType(p);
+            if (!p.scan(")")) {
+                throw new IllegalArgumentException(
+                        "Cannot parse type: expected ')' for map type: " + p.getOriginalString());
+            }
+            return Types.JSON;
         } else {
             throw new ConfigException(String.format(Locale.ENGLISH,
                     "Unsupported presto type '%s'", p.getOriginalString())); // TODO other types
