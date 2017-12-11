@@ -31,6 +31,7 @@ import org.embulk.config.TaskReport;
 import org.embulk.config.TaskSource;
 import org.embulk.input.td.writer.BooleanValueWriter;
 import org.embulk.input.td.writer.DoubleValueWriter;
+import org.embulk.input.td.writer.JsonValueWriter;
 import org.embulk.input.td.writer.LongValueWriter;
 import org.embulk.input.td.writer.StringValueWriter;
 import org.embulk.input.td.writer.ValueWriter;
@@ -209,7 +210,7 @@ public class TdInputPlugin
     private Type convertColumnType(final TDJob.Type jobType, final String from) {
         switch (jobType) {
             case PRESTO:
-                return convertPrestoColumnType(from);
+                return convertPrestoColumnType(new Parser(from));
             case HIVE:
             default:
                 throw new ConfigException(String.format(Locale.ENGLISH,
@@ -218,19 +219,89 @@ public class TdInputPlugin
         }
     }
 
-    private Type convertPrestoColumnType(final String from) {
-        final String t = from.toUpperCase(Locale.ENGLISH);
-        if (t.equals("BOOLEAN")) {
+    private Type convertPrestoColumnType(final Parser p) {
+        if (p.scan("BOOLEAN")) {
             return Types.BOOLEAN;
-        } else if (t.equals("BIGINT")) {
+        } else if (p.scan("INTEGER")) {
             return Types.LONG;
-        } else if (t.equals("DOUBLE") || t.equals("DECIMAL") || t.startsWith("DECIMAL")) {
+        } else if (p.scan("BIGINT")) {
+            return Types.LONG;
+        } else if (p.scan("DOUBLE")) {
             return Types.DOUBLE;
-        } else if (t.equals("VARCHAR") || t.startsWith("VARCHAR")) {
+        } else if (p.scan("DECIMAL")) {
+            return Types.DOUBLE;
+        } else if (p.scan("VARCHAR")) {
+            // TODO VARCHAR(n)
             return Types.STRING;
+        } else if (p.scan("ARRAY")) {
+            if (!p.scan("(")) {
+                throw new IllegalArgumentException(
+                        "Cannot parse type: expected '(' for array type: " + p.getOriginalString());
+            }
+            convertPrestoColumnType(p);
+            if (!p.scan(")")) {
+                throw new IllegalArgumentException(
+                        "Cannot parse type: expected ')' for array type: " + p.getOriginalString());
+            }
+            return Types.JSON;
+        } else if (p.scan("MAP")) {
+            if (!p.scan("(")) {
+                throw new IllegalArgumentException(
+                        "Cannot parse type: expected '(' for map type: " + p.getOriginalString());
+            }
+            convertPrestoColumnType(p);
+            if (!p.scan(",")) {
+                throw new IllegalArgumentException(
+                        "Cannot parse type: expected ',' for map type: " + p.getOriginalString());
+            }
+            convertPrestoColumnType(p);
+            if (!p.scan(")")) {
+                throw new IllegalArgumentException(
+                        "Cannot parse type: expected ')' for map type: " + p.getOriginalString());
+            }
+            return Types.JSON;
         } else {
             throw new ConfigException(String.format(Locale.ENGLISH,
-                    "Unsupported presto type '%s'", from)); // TODO other types
+                    "Unsupported presto type '%s'", p.getOriginalString())); // TODO other types
+        }
+    }
+
+    private static class Parser {
+        private final String original;
+        private final String string;
+        private int offset;
+
+        public Parser(final String original) {
+            this.original = original;
+            this.string = original.toUpperCase(Locale.ENGLISH);
+        }
+
+        public String getOriginalString() {
+            return original;
+        }
+
+        public String getString() {
+            return string;
+        }
+
+        public boolean scan(final String s) {
+            skipSpaces();
+            if (string.startsWith(s, offset)) {
+                offset += s.length();
+                return true;
+            }
+            return false;
+        }
+
+        public boolean eof() {
+            skipSpaces();
+            return string.length() <= offset;
+        }
+
+        private void skipSpaces() {
+            while (string.startsWith(" ", offset)) {
+                offset++;
+            }
         }
     }
 
@@ -339,8 +410,7 @@ public class TdInputPlugin
         } else if (type.equals(Types.DOUBLE)) {
             return new DoubleValueWriter(column);
         } else if (type.equals(Types.JSON)) {
-            throw new ConfigException(String.format(Locale.ENGLISH,
-                    "Unsupported column type (%s:%s)", column.getName(), type)); // TODO
+            return new JsonValueWriter(column);
         } else if (type.equals(Types.LONG)) {
             return new LongValueWriter(column);
         } else if (type.equals(Types.STRING)) {
