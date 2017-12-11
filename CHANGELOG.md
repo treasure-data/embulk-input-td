@@ -1,3 +1,8 @@
+## 0.2.1 - 2017-12-11
+
+* [new feature] Support Presto's MAP conversion with JSON type [#18]
+* [new feature] Support Presto's ARRAY conversion with JSON type [#17]
+
 ## 0.2.0 - 2017-08-24
 
 * [maintenance] Modify README.md to show version of Embulk that the plugin supports [#5]
