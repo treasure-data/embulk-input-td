@@ -22,10 +22,10 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 dependencies {
-    compile  "org.embulk:embulk-core:0.8.29"
-    provided "org.embulk:embulk-core:0.8.29"
-    compile  "org.embulk:embulk-standards:0.8.29"
-    provided "org.embulk:embulk-standards:0.8.29"
+    compile  "org.embulk:embulk-core:0.9.18"
+    provided "org.embulk:embulk-core:0.9.18"
+    compile  "org.embulk:embulk-standards:0.9.18"
+    provided "org.embulk:embulk-standards:0.9.18"
     compile  "com.treasuredata.client:td-client:0.9.0"
 
     testCompile "junit:junit:4.+"
