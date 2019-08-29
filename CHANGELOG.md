@@ -1,3 +1,6 @@
+## 0.2.2 - 2019-08-29
+* [maintenance] Upgrade td-client, embulk-(core|standards) [#22]
+
 ## 0.2.1 - 2017-12-11
 
 * [new feature] Support Presto's MAP conversion with JSON type [#18]
