@@ -34,6 +34,7 @@ import org.embulk.input.td.writer.DoubleValueWriter;
 import org.embulk.input.td.writer.JsonValueWriter;
 import org.embulk.input.td.writer.LongValueWriter;
 import org.embulk.input.td.writer.StringValueWriter;
+import org.embulk.input.td.writer.TimestampValueWriter;
 import org.embulk.input.td.writer.ValueWriter;
 import org.embulk.spi.BufferAllocator;
 import org.embulk.spi.Column;
@@ -233,6 +234,8 @@ public class TdInputPlugin
         } else if (p.scan("VARCHAR")) {
             // TODO VARCHAR(n)
             return Types.STRING;
+        } else if (p.scan("TIMESTAMP")) {
+            return Types.TIMESTAMP;
         } else if (p.scan("ARRAY")) {
             if (!p.scan("(")) {
                 throw new IllegalArgumentException(
@@ -416,8 +419,7 @@ public class TdInputPlugin
         } else if (type.equals(Types.STRING)) {
             return new StringValueWriter(column);
         } else if (type.equals(Types.TIMESTAMP)) {
-            throw new ConfigException(String.format(Locale.ENGLISH,
-                    "Unsupported column type (%s:%s)", column.getName(), type)); // TODO
+            return new TimestampValueWriter(column);
         } else {
             throw new ConfigException(String.format(Locale.ENGLISH,
                     "Unsupported column type (%s:%s)", column.getName(), type)); // TODO
