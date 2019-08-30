@@ -1,3 +1,6 @@
+## 0.2.3 - 2019-08-30
+* [new feature ] Support TIMESTAMP type [#20]
+
 ## 0.2.2 - 2019-08-29
 * [maintenance] Upgrade td-client, embulk-(core|standards) [#22]
 

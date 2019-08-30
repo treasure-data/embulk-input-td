@@ -1,7 +1,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = "embulk-input-td"
-  spec.version       = "0.2.1"
+  spec.version       = "0.2.3"
   spec.authors       = ["Muga Nishizawa"]
   spec.summary       = %[Td input plugin for Embulk]
   spec.description   = %[Loads records from Td.]
