@@ -77,6 +77,7 @@ public class TestTdInputPlugin
                    + "INTEGER '0', "
                    + "BIGINT '1', "
                    + "DOUBLE '0.0', "
+                   + "DECIMAL '0.5', "
                    + "VARCHAR '0123' "
                    + " ) )";
         Schema schema = Schema.builder()
@@ -84,6 +85,7 @@ public class TestTdInputPlugin
                    .add("col_integer",   LONG)
                    .add("col_bigint",    LONG)
                    .add("col_double",    DOUBLE)
+                   .add("col_decimal",   DOUBLE)
                    .add("col_varchar",   STRING)
                    .build();
 
@@ -98,7 +100,8 @@ public class TestTdInputPlugin
             assertEquals(0L, record[1]);
             assertEquals(1L, record[2]);
             assertEquals(0.0, record[3]);
-            assertEquals("0123", record[4]);
+            assertEquals(0.5, record[4]);
+            assertEquals("0123", record[5]);
         }
     }
 
