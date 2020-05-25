@@ -29,6 +29,8 @@ dependencies {
     compile  "com.treasuredata.client:td-client:0.9.0"
 
     testCompile "junit:junit:4.+"
+    testCompile "org.embulk:embulk-standards:0.9.12"
+    testCompile "org.embulk:embulk-core:0.9.12:tests"
 }
 
 task classpath(type: Copy, dependsOn: ["jar"]) {
