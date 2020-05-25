@@ -30,20 +30,18 @@ import org.junit.Rule;
 import org.junit.Test;
 
 
-public class TestTdInputPlugin
-{
+public class TestTdInputPlugin {
     private static String EMBULK_TD_TEST_APIKEY;
     private static String EMBULK_TD_TEST_DATABASE;
 
-    /*
+    /**
      * This test case requires environment variables:
      *   EMBULK_TD_TEST_APIKEY
      *   EMBULK_TD_TEST_DATABASE
      * If the variables not set, the test case is skipped.
      */
     @BeforeClass
-    public static void initializeConstantVariables()
-    {
+    public static void initializeConstantVariables() {
         EMBULK_TD_TEST_APIKEY = System.getenv("EMBULK_TD_TEST_APIKEY");
         EMBULK_TD_TEST_DATABASE = System.getenv("EMBULK_TD_TEST_DATABASE");
         assumeNotNull(EMBULK_TD_TEST_APIKEY, EMBULK_TD_TEST_DATABASE);
@@ -56,9 +54,12 @@ public class TestTdInputPlugin
     private InputPlugin runner;
     private MockPageOutput output;
 
+    /**
+     * Initialize the config, runner, and output
+     * Note: "query" needs to be updated in each test case
+     */
     @Before
-    public void createResources()
-    {
+    public void createResources() {
         config = runtime.getExec().newConfigSource()
                 .set("type", "td")
                 .set("apikey", EMBULK_TD_TEST_APIKEY)
@@ -69,8 +70,7 @@ public class TestTdInputPlugin
     }
 
     @Test
-    public void primitiveTest()
-    {
+    public void primitiveTest() {
         String primitiveQuery =
                    "SELECT * FROM ( VALUES ( "
                    + "BOOLEAN 'true', "
@@ -106,20 +106,17 @@ public class TestTdInputPlugin
     }
 
     static class Control
-            implements InputPlugin.Control
-    {
+            implements InputPlugin.Control {
         private InputPlugin runner;
         private PageOutput output;
 
-        Control(InputPlugin runner, PageOutput output)
-        {
+        Control(InputPlugin runner, PageOutput output) {
             this.runner = runner;
             this.output = output;
         }
 
         @Override
-        public List<TaskReport> run(TaskSource taskSource, Schema schema, int taskCount)
-        {
+        public List<TaskReport> run(TaskSource taskSource, Schema schema, int taskCount) {
             List<TaskReport> reports = new ArrayList<>();
             for (int i = 0; i < taskCount; i++) {
                 reports.add(runner.run(taskSource, schema, i, output));
