@@ -8,6 +8,7 @@
 * **Resume supported**: no
 * **Cleanup supported**: yes
 * **Guess supported**: no
+* **Multi-threading supported**: no
 
 ## Configuration
 
