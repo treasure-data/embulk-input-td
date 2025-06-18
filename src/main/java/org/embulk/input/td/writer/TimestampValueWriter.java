@@ -2,8 +2,8 @@ package org.embulk.input.td.writer;
 
 import org.embulk.spi.Column;
 import org.embulk.spi.PageBuilder;
-import org.embulk.spi.time.Timestamp;
 import org.msgpack.value.Value;
+import java.time.Instant;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
@@ -20,9 +20,9 @@ public class TimestampValueWriter
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
             Date formatedDate = format.parse(v.asStringValue().toString());
             long miliseconds = formatedDate.getTime();
-            to.setTimestamp(index, Timestamp.ofEpochMilli(miliseconds));
+            to.setTimestamp(index, Instant.ofEpochMilli(miliseconds));
         } catch (Exception e) {
-            
+
         }
     }
 }

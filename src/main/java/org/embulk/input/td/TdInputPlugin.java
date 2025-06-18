@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.google.inject.Inject;
 import com.treasuredata.client.ProxyConfig;
 import com.treasuredata.client.TDClient;
 import com.treasuredata.client.TDClientBuilder;
@@ -16,17 +14,14 @@ import com.treasuredata.client.model.TDJobSummary;
 import com.treasuredata.client.model.TDResultFormat;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
-import org.embulk.config.Config;
-import org.embulk.config.ConfigDefault;
 import org.embulk.config.ConfigDiff;
 import org.embulk.config.ConfigException;
-import org.embulk.config.ConfigInject;
 import org.embulk.config.ConfigSource;
-import org.embulk.config.Task;
 import org.embulk.config.TaskReport;
 import org.embulk.config.TaskSource;
 import org.embulk.input.td.writer.BooleanValueWriter;
@@ -36,6 +31,12 @@ import org.embulk.input.td.writer.LongValueWriter;
 import org.embulk.input.td.writer.StringValueWriter;
 import org.embulk.input.td.writer.TimestampValueWriter;
 import org.embulk.input.td.writer.ValueWriter;
+import org.embulk.util.config.Config;
+import org.embulk.util.config.ConfigDefault;
+import org.embulk.util.config.ConfigMapper;
+import org.embulk.util.config.ConfigMapperFactory;
+import org.embulk.util.config.Task;
+import org.embulk.util.config.TaskMapper;
 import org.embulk.spi.BufferAllocator;
 import org.embulk.spi.Column;
 import org.embulk.spi.DataException;
@@ -51,16 +52,12 @@ import org.msgpack.core.MessageUnpacker;
 import org.msgpack.value.ArrayValue;
 import org.msgpack.value.Value;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TdInputPlugin
         implements InputPlugin {
 
-    private final Logger log;
-
-    @Inject
-    public TdInputPlugin() {
-        this.log = Exec.getLogger(this.getClass());
-    }
+    private final Logger log = LoggerFactory.getLogger(TdInputPlugin.class);
 
     private static JsonNode toJsonNode(final String schema) {
         try {
@@ -71,9 +68,15 @@ public class TdInputPlugin
         }
     }
 
+    private static final ConfigMapperFactory CONFIG_MAPPER_FACTORY = ConfigMapperFactory.builder()
+        .addDefaultModules()
+        .build();
+    private static final ConfigMapper CONFIG_MAPPER = CONFIG_MAPPER_FACTORY.createConfigMapper();
+    private static final TaskMapper TASK_MAPPER = CONFIG_MAPPER_FACTORY.createTaskMapper();
+
     @Override
     public ConfigDiff transaction(final ConfigSource config, final InputPlugin.Control control) {
-        final PluginTask task = config.loadConfig(PluginTask.class);
+        final PluginTask task = CONFIG_MAPPER.map(config, PluginTask.class);
         try (final TDClient client = newTdClient(task)) {
             final TDJob job = getTdJob(task, client);
 
@@ -89,7 +92,7 @@ public class TdInputPlugin
             newValueWriters(inputSchema);
 
             // overwrite job_id
-            final TaskSource taskSource = task.dump().set("job_id", job.getJobId());
+            final TaskSource taskSource = task.toTaskSource().set("job_id", job.getJobId());
             return resume(taskSource, inputSchema, 1, control);
         }
     }
@@ -125,8 +128,8 @@ public class TdInputPlugin
             final String host = props.getProperty(hostKey);
             final String defaultPort = !useSsl ? "80" : "443";
             final int port = Integer.parseInt(props.getProperty(portKey, defaultPort));
-            final Optional<String> user = Optional.fromNullable(props.getProperty(userKey));
-            final Optional<String> password = Optional.fromNullable(props.getProperty(passwordKey));
+            final Optional<String> user = Optional.of(props.getProperty(userKey));
+            final Optional<String> password = Optional.of(props.getProperty(passwordKey));
             return Optional.of(new ProxyConfig(host, port, useSsl, user, password));
         } else if (task.isPresent()) {
             final HttpProxyTask proxyTask = task.get();
@@ -137,7 +140,7 @@ public class TdInputPlugin
             final Optional<String> password = proxyTask.getPassword();
             return Optional.of(new ProxyConfig(host, port, useSsl, user, password));
         } else {
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 
@@ -314,8 +317,9 @@ public class TdInputPlugin
             final Schema schema,
             final int taskCount,
             final InputPlugin.Control control) {
+        ConfigDiff configDiff = CONFIG_MAPPER_FACTORY.newConfigDiff();
         control.run(taskSource, schema, taskCount);
-        return Exec.newConfigDiff();
+        return configDiff;
     }
 
     @Override
@@ -333,13 +337,14 @@ public class TdInputPlugin
             final Schema schema,
             final int taskIndex,
             final PageOutput output) {
-        final PluginTask task = taskSource.loadTask(PluginTask.class);
-        final BufferAllocator allocator = task.getBufferAllocator();
+        final PluginTask task = TASK_MAPPER.map(taskSource, PluginTask.class);
+        TaskReport taskReport = CONFIG_MAPPER_FACTORY.newTaskReport();
+        final BufferAllocator allocator = Exec.getBufferAllocator();
         final ValueWriter[] writers = newValueWriters(schema);
         final String jobId = taskSource.get(String.class, "job_id");
         final boolean stopOnInvalidRecord = task.getStopOnInvalidRecord();
 
-        try (final PageBuilder pageBuilder = new PageBuilder(allocator, schema, output);
+        try (final PageBuilder pageBuilder = Exec.getPageBuilder(allocator, schema, output);
              final TDClient client = newTdClient(task)) {
             final TDResultFormat resultFormat = TDResultFormat.MESSAGE_PACK_GZ;
             client.jobResult(jobId, resultFormat, new Function<InputStream, Void>() {
@@ -395,7 +400,7 @@ public class TdInputPlugin
             pageBuilder.finish();
         }
 
-        return Exec.newTaskReport();
+        return taskReport;
     }
 
     private ValueWriter[] newValueWriters(final Schema schema) {
@@ -428,7 +433,7 @@ public class TdInputPlugin
 
     @Override
     public ConfigDiff guess(final ConfigSource config) {
-        return Exec.newConfigDiff(); // do nothing
+        return CONFIG_MAPPER_FACTORY.newConfigDiff(); // do nothing
     }
 
     public interface PluginTask
@@ -467,11 +472,6 @@ public class TdInputPlugin
         @Config("stop_on_invalid_record")
         @ConfigDefault("false")
         public boolean getStopOnInvalidRecord();
-
-        // TODO column_options
-
-        @ConfigInject
-        BufferAllocator getBufferAllocator();
     }
 
     public interface HttpProxyTask
